@@ -106,8 +106,8 @@ services:
     networks:
       - media-network
     dns:
-      - ${DNS_PRIMARY:?err}
-      - ${DNS_SECONDARY:?err}
+      - ${DNS_PRIMARY:-8.8.8.8}
+      - ${DNS_SECONDARY:-1.1.1.1}
 
   seerr:
     image: ghcr.io/seerr-team/seerr:latest
@@ -125,8 +125,8 @@ services:
     networks:
       - media-network
     dns:
-      - ${DNS_PRIMARY:?err}
-      - ${DNS_SECONDARY:?err}
+      - ${DNS_PRIMARY:-8.8.8.8}
+      - ${DNS_SECONDARY:-1.1.1.1}
 
   prowlarr:
     image: lscr.io/linuxserver/prowlarr:latest
@@ -172,7 +172,7 @@ services:
     pull_policy: always
     volumes:
       - ${FOLDER_FOR_CONFIGS:?err}/radarr:/config
-      - ${FOLDER_FOR_HDD:?err}:/hdd
+      - ${FOLDER_FOR_HDD:-/hdd}:/hdd
     ports:
       - "${WEBUI_PORT_RADARR:?err}:7878"
     environment:
@@ -184,8 +184,8 @@ services:
     networks:
       - media-network
     dns:
-      - ${DNS_PRIMARY:?err}
-      - ${DNS_SECONDARY:?err}
+      - ${DNS_PRIMARY:-8.8.8.8}
+      - ${DNS_SECONDARY:-1.1.1.1}
 
   sonarr:
     image: lscr.io/linuxserver/sonarr:latest
@@ -194,7 +194,7 @@ services:
     pull_policy: always
     volumes:
       - ${FOLDER_FOR_CONFIGS:?err}/sonarr:/config
-      - ${FOLDER_FOR_HDD:?err}:/hdd
+      - ${FOLDER_FOR_HDD:-/hdd}:/hdd
     ports:
       - "${WEBUI_PORT_SONARR:?err}:8989"
     environment:
@@ -206,8 +206,8 @@ services:
     networks:
       - media-network
     dns:
-      - ${DNS_PRIMARY:?err}
-      - ${DNS_SECONDARY:?err}
+      - ${DNS_PRIMARY:-8.8.8.8}
+      - ${DNS_SECONDARY:-1.1.1.1}
 
   tdarr:
     image: ghcr.io/haveagitgat/tdarr:latest
@@ -218,7 +218,7 @@ services:
       - ${FOLDER_FOR_CONFIGS:?err}/tdarr/server:/app/server
       - ${FOLDER_FOR_CONFIGS:?err}/tdarr/configs:/app/configs
       - ${FOLDER_FOR_CONFIGS:?err}/tdarr/logs:/app/logs
-      - ${TDARR_TRANSCODE_PATH:?err}:/temp
+      - ${TDARR_TRANSCODE_PATH:-/mnt/temp/tdarr_transcode_cache}:/temp
       - ${FOLDER_FOR_MEDIA:?err}:/data
     ports:
       - "${TDARR_SERVER_PORT:?err}:${TDARR_SERVER_PORT:?err}"
