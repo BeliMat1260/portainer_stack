@@ -1,0 +1,62 @@
+services:
+  free-games:
+    image: ghcr.io/p-adamiec/free-games-claimer-remaster:latest
+    container_name: free-games-claimer
+    restart: unless-stopped
+    pull_policy: always
+    ports:
+      - "${WEBUI_PORT_FREE_GAMES_CLAIMER:?err}:7080"
+    volumes:
+      - ${FOLDER_FOR_CONFIGS:?err}/free-games-claimer:/fgc/data
+    environment:
+      - TZ=${TIMEZONE:?err}
+      - NOTIFY=${NOTIFY:?err}
+      - PG_REDEEM=1
+      - GP_CLAIM_DLC=true
+      - NOTIFY_MISSING_BASE=false
+      - STORES=epic,fab,prime,gog,ubisoft,aliexpress
+      - SHOW=1
+      - RUN_ON_STARTUP=true
+      - VNC_LOGIN_TIMEOUT=600
+      - VNC_URL=http://${SERVER_IP:?err}:${WEBUI_PORT_FREE_GAMES_CLAIMER:?err}
+      - EG_EMAIL=${EG_EMAIL:?err}
+      - EG_PASSWORD=${EG_PASSWORD:?err}
+      - PG_EMAIL=${PG_EMAIL:?err}
+      - PG_PASSWORD=${PG_PASSWORD:?err}
+      - GOG_EMAIL=${GOG_EMAIL:?err}
+      - GOG_PASSWORD=${GOG_PASSWORD:?err}
+      - UBI_EMAIL=${UBI_EMAIL:?err}
+      - UBI_PASSWORD=${UBI_PASSWORD:?err}
+      - AE_EMAIL=${AE_EMAIL:?err}
+      - AE_PASSWORD=${AE_PASSWORD:?err}
+      - SCHEDULER_HOURS=12
+    labels:
+      - com.centurylinklabs.watchtower.enable=true
+      - com.centurylinklabs.watchtower.scope=free-games-claimer
+    networks:
+      - utils-network
+
+  # Only touches containers carrying the matching enable + scope labels,
+  # so other stacks on the host are never updated by this instance.
+  watchtower:
+    image: nickfedor/watchtower:latest
+    container_name: free-games-claimer-watchtower
+    restart: unless-stopped
+    pull_policy: always
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+    environment:
+      - TZ=${TIMEZONE:?err}
+      - WATCHTOWER_LABEL_ENABLE=true
+      - WATCHTOWER_SCOPE=free-games-claimer
+      - WATCHTOWER_SCHEDULE=${WATCHTOWER_SCHEDULE:-0 0 4 * * *}
+      - WATCHTOWER_CLEANUP=true
+    labels:
+      - com.centurylinklabs.watchtower.enable=true
+      - com.centurylinklabs.watchtower.scope=free-games-claimer
+    networks:
+      - utils-network
+
+networks:
+  utils-network:
+    driver: bridge
