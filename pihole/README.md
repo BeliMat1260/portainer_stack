@@ -19,3 +19,5 @@ DNS della rete locale. Il container usa la rete dell'host e ascolta la porta `53
 | DNS a monte | `PIHOLE_UPSTREAMS` · `1.1.1.1;9.9.9.9` |
 | Fuso | `Europe/Rome` |
 | Dati | `/DATA/AppData/pihole` |
+
+L'API (`/api`) chiede la stessa password della web UI. Per il widget di Homepage vedi [homepage](../homepage/README.md#widget-pi-hole).
