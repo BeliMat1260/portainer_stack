@@ -25,4 +25,4 @@ File, git, sincronizzazione, Minecraft e il tunnel che pubblica i servizi.
 
 Cloudflared usa la rete dell'host per raggiungere le porte degli altri container. Gitea legge dominio e URL da `GITEA_DOMAIN`, `GITEA_ROOT_URL` e `GITEA_SSH_PORT` (nell'esempio, `git.example.com`). Le password di MariaDB sono quelle con cui il database è stato creato.
 
-Se non sono nello stack, i DNS restano `8.8.8.8` e `1.1.1.1`, File Browser sta sulla porta `8080` e mostra `/`, Minecraft Java è `25565` e Bedrock `19132/udp`. Nell'esempio `FILEBROWSER_ROOT` è `/hdd`.
+Cloudflared e Syncthing usano i DNS `8.8.8.8` e `1.1.1.1`. Se non sono nello stack, File Browser sta sulla porta `8080` e mostra `/`, Minecraft Java è `25565` e Bedrock `19132/udp`. Nell'esempio `FILEBROWSER_ROOT` è `/hdd`.

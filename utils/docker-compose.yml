@@ -60,8 +60,8 @@ services:
     environment:
       TUNNEL_TOKEN: ${CLOUDFLARED_TUNNEL_TOKEN:?err}
     dns:
-      - ${DNS_PRIMARY:-8.8.8.8}
-      - ${DNS_SECONDARY:-1.1.1.1}
+      - 8.8.8.8
+      - 1.1.1.1
     network_mode: host
 
   syncthing:
@@ -85,8 +85,8 @@ services:
     networks:
       - utils-network
     dns:
-      - ${DNS_PRIMARY:-8.8.8.8}
-      - ${DNS_SECONDARY:-1.1.1.1}
+      - 8.8.8.8
+      - 1.1.1.1
 
   filebrowser:
     image: filebrowser/filebrowser:latest

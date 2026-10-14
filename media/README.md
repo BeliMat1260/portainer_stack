@@ -34,7 +34,7 @@ Gluetun pubblica anche il control server `9075`, il proxy HTTP `8888` e Shadowso
 | Sonarr | `8989` |
 | Tdarr | web `8265`, server `8266` |
 
-Jellyfin, Seerr, Radarr e Sonarr risolvono i nomi con `DNS_PRIMARY` e `DNS_SECONDARY`. Se le due variabili non sono nello stack, restano `8.8.8.8` e `1.1.1.1`. Prowlarr, qBittorrent, Radarr e Sonarr usano il tema `TP_THEME` (`nord`).
+Jellyfin, Seerr, Radarr e Sonarr usano i DNS `8.8.8.8` e `1.1.1.1`. Prowlarr, qBittorrent, Radarr e Sonarr usano il tema `TP_THEME` (`nord`).
 
 ## Dati
 

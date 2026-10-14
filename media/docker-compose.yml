@@ -106,8 +106,8 @@ services:
     networks:
       - media-network
     dns:
-      - ${DNS_PRIMARY:-8.8.8.8}
-      - ${DNS_SECONDARY:-1.1.1.1}
+      - 8.8.8.8
+      - 1.1.1.1
 
   seerr:
     image: ghcr.io/seerr-team/seerr:latest
@@ -125,8 +125,8 @@ services:
     networks:
       - media-network
     dns:
-      - ${DNS_PRIMARY:-8.8.8.8}
-      - ${DNS_SECONDARY:-1.1.1.1}
+      - 8.8.8.8
+      - 1.1.1.1
 
   prowlarr:
     image: lscr.io/linuxserver/prowlarr:latest
@@ -184,8 +184,8 @@ services:
     networks:
       - media-network
     dns:
-      - ${DNS_PRIMARY:-8.8.8.8}
-      - ${DNS_SECONDARY:-1.1.1.1}
+      - 8.8.8.8
+      - 1.1.1.1
 
   sonarr:
     image: lscr.io/linuxserver/sonarr:latest
@@ -206,8 +206,8 @@ services:
     networks:
       - media-network
     dns:
-      - ${DNS_PRIMARY:-8.8.8.8}
-      - ${DNS_SECONDARY:-1.1.1.1}
+      - 8.8.8.8
+      - 1.1.1.1
 
   tdarr:
     image: ghcr.io/haveagitgat/tdarr:latest
