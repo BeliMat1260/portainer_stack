@@ -1,0 +1,148 @@
+name: utils
+
+networks:
+  utils-network:
+    name: utils-network
+    driver: bridge
+    ipam:
+      driver: default
+      config:
+        - subnet: ${DOCKER_SUBNET:?err}
+          gateway: ${DOCKER_GATEWAY:?err}
+
+services:
+  mariadb:
+    image: lscr.io/linuxserver/mariadb:latest
+    container_name: nextcloud-db
+    restart: unless-stopped
+    pull_policy: always
+    volumes:
+      - ${FOLDER_FOR_CONFIGS:?err}/mariadb:/config
+    environment:
+      - PUID=${PUID:?err}
+      - PGID=${PGID:?err}
+      - TZ=${TIMEZONE:?err}
+      - MYSQL_ROOT_PASSWORD=${NEXTCLOUD_DB_ROOT_PASSWORD:?err}
+      - MYSQL_DATABASE=nextcloud
+      - MYSQL_USER=${NEXTCLOUD_DB_USER:?err}
+      - MYSQL_PASSWORD=${NEXTCLOUD_DB_PASSWORD:?err}
+    networks:
+      - utils-network
+
+  nextcloud:
+    image: nextcloud:latest
+    container_name: nextcloud
+    restart: unless-stopped
+    pull_policy: always
+    depends_on:
+      - mariadb
+    volumes:
+      - ${FOLDER_FOR_CONFIGS:?err}/nextcloud:/var/www/html
+      - ${FOLDER_FOR_MEDIA:?err}/Nextcloud:/data
+    ports:
+      - "${WEBUI_PORT_NEXTCLOUD:?err}:80"
+    environment:
+      - TZ=${TIMEZONE:?err}
+      - MYSQL_HOST=mariadb
+      - MYSQL_DATABASE=nextcloud
+      - MYSQL_USER=${NEXTCLOUD_DB_USER:?err}
+      - MYSQL_PASSWORD=${NEXTCLOUD_DB_PASSWORD:?err}
+      - APACHE_DISABLE_REWRITE_LOG=1
+    networks:
+      - utils-network
+
+  cloudflared:
+    image: cloudflare/cloudflared:latest
+    container_name: cloudflared
+    restart: unless-stopped
+    pull_policy: always
+    command: tunnel --no-autoupdate run
+    environment:
+      TUNNEL_TOKEN: ${CLOUDFLARED_TUNNEL_TOKEN:?err}
+    dns:
+      - ${DNS_PRIMARY:?err}
+      - ${DNS_SECONDARY:?err}
+    network_mode: host
+
+  syncthing:
+    image: lscr.io/linuxserver/syncthing:latest
+    container_name: syncthing
+    restart: unless-stopped
+    pull_policy: always
+    volumes:
+      - ${FOLDER_FOR_CONFIGS:?err}/syncthing:/config
+      - ${FOLDER_FOR_MEDIA:?err}/Syncthing:/sync
+    ports:
+      - "${WEBUI_PORT_SYNCTHING:?err}:8384"
+      - "${SYNCTHING_SYNC_PORT_TCP:?err}:22000/tcp"
+      - "${SYNCTHING_SYNC_PORT_UDP:?err}:22000/udp"
+      - "${SYNCTHING_DISCOVERY_PORT:?err}:21027/udp"
+    environment:
+      - PUID=${PUID:?err}
+      - PGID=${PGID:?err}
+      - TZ=${TIMEZONE:?err}
+      - UMASK_SET=${UMASK:?err}
+    networks:
+      - utils-network
+    dns:
+      - ${DNS_PRIMARY:?err}
+      - ${DNS_SECONDARY:?err}
+
+  filebrowser:
+    image: filebrowser/filebrowser:latest
+    container_name: filebrowser
+    restart: unless-stopped
+    pull_policy: always
+    ports:
+      - "${WEBUI_PORT_FILEBROWSER:?err}:80"
+    volumes:
+      - ${FILEBROWSER_ROOT:?err}:/srv
+      - filebrowser_database:/database
+      - filebrowser_config:/config
+    networks:
+      - utils-network
+
+  gitea:
+    image: gitea/gitea:latest
+    container_name: gitea
+    restart: unless-stopped
+    pull_policy: always
+    environment:
+      - USER_UID=${PUID:?err}
+      - USER_GID=${PGID:?err}
+      - TZ=${TIMEZONE:?err}
+      - GITEA__server__DOMAIN=${GITEA_DOMAIN:?err}
+      - GITEA__server__ROOT_URL=${GITEA_ROOT_URL:?err}
+      - GITEA__server__SSH_DOMAIN=${GITEA_DOMAIN:?err}
+      - GITEA__server__SSH_PORT=${GITEA_SSH_PORT:?err}
+    volumes:
+      - ${FOLDER_FOR_CONFIGS:?err}/gitea:/data
+    ports:
+      - "${WEBUI_PORT_GITEA:?err}:3000"
+      - "${GITEA_SSH_PORT:?err}:22"
+    networks:
+      - utils-network
+
+  crafty:
+    image: arcadiatechnology/crafty-4:latest
+    container_name: crafty-controller
+    restart: unless-stopped
+    pull_policy: always
+    ports:
+      - "${WEBUI_PORT_CRAFTY:?err}:8443"
+      - "${MINECRAFT_JAVA_PORT:?err}:25565"
+      - "${MINECRAFT_BEDROCK_PORT:?err}:19132/udp"
+    volumes:
+      - ${FOLDER_FOR_CONFIGS:?err}/crafty/backups:/crafty/backups
+      - ${FOLDER_FOR_CONFIGS:?err}/crafty/logs:/crafty/logs
+      - ${FOLDER_FOR_CONFIGS:?err}/crafty/servers:/crafty/servers
+      - ${FOLDER_FOR_CONFIGS:?err}/crafty/config:/crafty/config
+      - ${FOLDER_FOR_CONFIGS:?err}/crafty/import:/crafty/import
+    environment:
+      - TZ=${TIMEZONE:?err}
+    networks:
+      - utils-network
+
+volumes:
+  filebrowser_database:
+  filebrowser_config:

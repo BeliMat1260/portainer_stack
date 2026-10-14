@@ -1,0 +1,51 @@
+name: n8n
+
+services:
+  postgres:
+    image: postgres:15-alpine
+    container_name: n8n-postgres
+    restart: unless-stopped
+    pull_policy: always
+    environment:
+      POSTGRES_USER: ${N8N_DB_USER:?err}
+      POSTGRES_PASSWORD: ${N8N_DB_PASSWORD:?err}
+      POSTGRES_DB: ${N8N_DB_NAME:?err}
+    volumes:
+      - n8n-postgres:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U $${POSTGRES_USER} -d $${POSTGRES_DB}"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+
+  n8n:
+    image: docker.n8n.io/n8nio/n8n:latest
+    container_name: n8n
+    restart: unless-stopped
+    pull_policy: always
+    ports:
+      - "${WEBUI_PORT_N8N:?err}:5678"
+    environment:
+      DB_TYPE: postgresdb
+      DB_POSTGRESDB_HOST: postgres
+      DB_POSTGRESDB_PORT: 5432
+      DB_POSTGRESDB_DATABASE: ${N8N_DB_NAME:?err}
+      DB_POSTGRESDB_USER: ${N8N_DB_USER:?err}
+      DB_POSTGRESDB_PASSWORD: ${N8N_DB_PASSWORD:?err}
+      GENERIC_TIMEZONE: ${TIMEZONE:?err}
+      N8N_BASIC_AUTH_ACTIVE: "true"
+      N8N_BASIC_AUTH_USER: ${N8N_BASIC_AUTH_USER:?err}
+      N8N_BASIC_AUTH_PASSWORD: ${N8N_BASIC_AUTH_PASSWORD:?err}
+      N8N_SECURE_COOKIE: ${N8N_SECURE_COOKIE:?err}
+      N8N_ENCRYPTION_KEY: ${N8N_ENCRYPTION_KEY:?err}
+    volumes:
+      - n8n-data:/home/node/.n8n
+      - ${FOLDER_FOR_SCRIPTS:?err}:/script
+      - /var/run/docker.sock:/var/run/docker.sock
+    depends_on:
+      postgres:
+        condition: service_healthy
+
+volumes:
+  n8n-postgres:
+  n8n-data:

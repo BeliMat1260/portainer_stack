@@ -1,0 +1,237 @@
+name: media-stack
+
+networks:
+  media-network:
+    name: media-network
+    driver: bridge
+    ipam:
+      driver: default
+      config:
+        - subnet: ${DOCKER_SUBNET:?err}
+          gateway: ${DOCKER_GATEWAY:?err}
+
+services:
+  gluetun:
+    image: qmcgaw/gluetun:latest
+    container_name: gluetun
+    restart: unless-stopped
+    pull_policy: always
+    cap_add:
+      - NET_ADMIN
+    devices:
+      - /dev/net/tun:/dev/net/tun
+    ports:
+      - "9075:9075/tcp" # HTTP control server
+      - "8888:8888/tcp" # HTTP proxy
+      - "8388:8388/tcp" # Shadowsocks
+      - "8388:8388/udp"
+      - "${WEBUI_PORT_QBITTORRENT:?err}:${WEBUI_PORT_QBITTORRENT:?err}"
+      - "${QBIT_PORT_TCP:?err}:6881/tcp"
+      - "${QBIT_PORT_UDP:?err}:6881/udp"
+      - "${WEBUI_PORT_PROWLARR:?err}:9696"
+      - "${FLARESOLVERR_PORT:?err}:8191" # Trawl, sulla rete di Gluetun
+    volumes:
+      - ${FOLDER_FOR_CONFIGS:?err}/gluetun:/gluetun
+    environment:
+      - PUID=${PUID:?err}
+      - PGID=${PGID:?err}
+      - TZ=${TIMEZONE:?err}
+      - VPN_SERVICE_PROVIDER=${VPN_SERVICE_PROVIDER:?err}
+      - OPENVPN_USER=${VPN_USERNAME:?err}
+      - OPENVPN_PASSWORD=${VPN_PASSWORD:?err}
+      - SERVER_COUNTRIES=${SERVER_COUNTRIES:-}
+      - SERVER_CITIES=${SERVER_CITIES:-}
+      - SERVER_HOSTNAMES=${SERVER_HOSTNAMES:-}
+      - SERVER_REGION=${SERVER_REGION:-}
+      - FIREWALL_OUTBOUND_SUBNETS=${LOCAL_SUBNET:?err}
+      - OPENVPN_CUSTOM_CONFIG=${OPENVPN_CUSTOM_CONFIG:-}
+      - VPN_TYPE=${VPN_TYPE:?err}
+      - VPN_ENDPOINT_IP=${VPN_ENDPOINT_IP:-}
+      - VPN_ENDPOINT_PORT=${VPN_ENDPOINT_PORT:-}
+      - WIREGUARD_PUBLIC_KEY=${WIREGUARD_PUBLIC_KEY:-}
+      - WIREGUARD_PRIVATE_KEY=${WIREGUARD_PRIVATE_KEY:-}
+      - WIREGUARD_PRESHARED_KEY=${WIREGUARD_PRESHARED_KEY:-}
+      - WIREGUARD_ADDRESSES=${WIREGUARD_ADDRESSES:-}
+      - HTTP_CONTROL_SERVER_ADDRESS=:9075
+      - HTTP_CONTROL_SERVER_LOG=ON
+      - HTTPPROXY=on
+      - SHADOWSOCKS=on
+      - VPN_INTERFACE_MTU=1300
+      - OPENVPN_MSSFIX=1300
+    networks:
+      - media-network
+
+  # Trawl e Redis condividono il namespace di rete di Gluetun, quindi Redis è su localhost.
+  trawl:
+    image: ghcr.io/germondai/trawl:latest
+    container_name: trawl
+    restart: unless-stopped
+    pull_policy: always
+    shm_size: 1gb
+    environment:
+      - TZ=${TIMEZONE:?err}
+      - REDIS_URL=redis://localhost:6379
+      - BROWSER_POOL_SIZE=3
+    network_mode: service:gluetun
+    depends_on:
+      - gluetun
+      - trawl-redis
+
+  trawl-redis:
+    image: redis:7-alpine
+    container_name: trawl-redis
+    restart: unless-stopped
+    pull_policy: always
+    volumes:
+      - ${FOLDER_FOR_CONFIGS:?err}/trawl-redis:/data
+    network_mode: service:gluetun
+    depends_on:
+      - gluetun
+
+  jellyfin:
+    image: lscr.io/linuxserver/jellyfin:latest
+    container_name: jellyfin
+    restart: unless-stopped
+    pull_policy: always
+    volumes:
+      - ${FOLDER_FOR_CONFIGS:?err}/jellyfin:/config
+      - ${FOLDER_FOR_MEDIA:?err}:/hdd/Media
+    ports:
+      - "${WEBUI_PORT_JELLYFIN:?err}:8096"
+    environment:
+      - PUID=${PUID:?err}
+      - PGID=${PGID:?err}
+      - UMASK=${UMASK:?err}
+      - TZ=${TIMEZONE:?err}
+    networks:
+      - media-network
+    dns:
+      - ${DNS_PRIMARY:?err}
+      - ${DNS_SECONDARY:?err}
+
+  seerr:
+    image: ghcr.io/seerr-team/seerr:latest
+    container_name: seerr
+    init: true
+    restart: unless-stopped
+    pull_policy: always
+    volumes:
+      - ${FOLDER_FOR_CONFIGS:?err}/seerr:/app/config
+    ports:
+      - "${WEBUI_PORT_SEERR:?err}:5055"
+    environment:
+      - TZ=${TIMEZONE:?err}
+      - LOG_LEVEL=info
+    networks:
+      - media-network
+    dns:
+      - ${DNS_PRIMARY:?err}
+      - ${DNS_SECONDARY:?err}
+
+  prowlarr:
+    image: lscr.io/linuxserver/prowlarr:latest
+    container_name: prowlarr
+    restart: unless-stopped
+    pull_policy: always
+    volumes:
+      - ${FOLDER_FOR_CONFIGS:?err}/prowlarr:/config
+    environment:
+      - PUID=${PUID:?err}
+      - PGID=${PGID:?err}
+      - TZ=${TIMEZONE:?err}
+      - DOCKER_MODS=ghcr.io/gilbn/theme.park:prowlarr
+      - TP_THEME=${TP_THEME:?err}
+    network_mode: service:gluetun
+    depends_on:
+      - gluetun
+
+  qbittorrent:
+    image: lscr.io/linuxserver/qbittorrent:latest
+    container_name: qbittorrent
+    restart: unless-stopped
+    pull_policy: always
+    volumes:
+      - ${FOLDER_FOR_CONFIGS:?err}/qbittorrent:/config
+      - ${FOLDER_FOR_DOWNLOADS:?err}:/hdd/Downloads
+    environment:
+      - PUID=${PUID:?err}
+      - PGID=${PGID:?err}
+      - UMASK=${UMASK:?err}
+      - WEBUI_PORT=${WEBUI_PORT_QBITTORRENT:?err}
+      - TZ=${TIMEZONE:?err}
+      - DOCKER_MODS=ghcr.io/gilbn/theme.park:qbittorrent
+      - TP_THEME=${TP_THEME:?err}
+    network_mode: service:gluetun
+    depends_on:
+      - gluetun
+
+  radarr:
+    image: lscr.io/linuxserver/radarr:latest
+    container_name: radarr
+    restart: unless-stopped
+    pull_policy: always
+    volumes:
+      - ${FOLDER_FOR_CONFIGS:?err}/radarr:/config
+      - ${FOLDER_FOR_HDD:?err}:/hdd
+    ports:
+      - "${WEBUI_PORT_RADARR:?err}:7878"
+    environment:
+      - PUID=${PUID:?err}
+      - PGID=${PGID:?err}
+      - TZ=${TIMEZONE:?err}
+      - DOCKER_MODS=ghcr.io/gilbn/theme.park:radarr
+      - TP_THEME=${TP_THEME:?err}
+    networks:
+      - media-network
+    dns:
+      - ${DNS_PRIMARY:?err}
+      - ${DNS_SECONDARY:?err}
+
+  sonarr:
+    image: lscr.io/linuxserver/sonarr:latest
+    container_name: sonarr
+    restart: unless-stopped
+    pull_policy: always
+    volumes:
+      - ${FOLDER_FOR_CONFIGS:?err}/sonarr:/config
+      - ${FOLDER_FOR_HDD:?err}:/hdd
+    ports:
+      - "${WEBUI_PORT_SONARR:?err}:8989"
+    environment:
+      - PUID=${PUID:?err}
+      - PGID=${PGID:?err}
+      - TZ=${TIMEZONE:?err}
+      - DOCKER_MODS=ghcr.io/gilbn/theme.park:sonarr
+      - TP_THEME=${TP_THEME:?err}
+    networks:
+      - media-network
+    dns:
+      - ${DNS_PRIMARY:?err}
+      - ${DNS_SECONDARY:?err}
+
+  tdarr:
+    image: ghcr.io/haveagitgat/tdarr:latest
+    container_name: tdarr
+    restart: unless-stopped
+    pull_policy: always
+    volumes:
+      - ${FOLDER_FOR_CONFIGS:?err}/tdarr/server:/app/server
+      - ${FOLDER_FOR_CONFIGS:?err}/tdarr/configs:/app/configs
+      - ${FOLDER_FOR_CONFIGS:?err}/tdarr/logs:/app/logs
+      - ${TDARR_TRANSCODE_PATH:?err}:/temp
+      - ${FOLDER_FOR_MEDIA:?err}:/data
+    ports:
+      - "${TDARR_SERVER_PORT:?err}:${TDARR_SERVER_PORT:?err}"
+      - "${WEBUI_PORT_TDARR:?err}:${WEBUI_PORT_TDARR:?err}"
+    environment:
+      - PUID=${PUID:?err}
+      - PGID=${PGID:?err}
+      - UMASK=${UMASK:?err}
+      - TZ=${TIMEZONE:?err}
+      - serverIP=0.0.0.0
+      - serverPort=${TDARR_SERVER_PORT:?err}
+      - webUIPort=${WEBUI_PORT_TDARR:?err}
+      - internalNode=false
+      - nodeID=Tdarr_Server
+    networks:
+      - media-network

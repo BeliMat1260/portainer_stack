@@ -1,0 +1,16 @@
+name: homepage
+
+services:
+  homepage:
+    image: ghcr.io/gethomepage/homepage:latest
+    container_name: homepage
+    restart: unless-stopped
+    pull_policy: always
+    ports:
+      - "${WEBUI_PORT_HOMEPAGE:?err}:3000"
+    volumes:
+      - ${FOLDER_FOR_CONFIGS:?err}/homepage:/app/config
+      - /var/run/docker.sock:/var/run/docker.sock
+      - ${FOLDER_FOR_HDD:?err}:/hdd
+    environment:
+      HOMEPAGE_ALLOWED_HOSTS: ${HOMEPAGE_ALLOWED_HOSTS:?err}

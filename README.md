@@ -8,9 +8,22 @@ toccare gli altri.
 
 ## Stack disponibili
 
-| Stack | Descrizione | Compose path |
-| --- | --- | --- |
-| [free-games-claimer](free-games-claimer/) | Riscatta in automatico i giochi gratis (Epic, Prime Gaming, GOG, Ubisoft, Fab, AliExpress) con aggiornamento automatico dell'immagine | `free-games-claimer/docker-compose.yml` |
+| Stack | Nome su Portainer | Descrizione | Compose path |
+| --- | --- | --- | --- |
+| [media](media/) | `media` (prima `stack`) | Jellyfin, Seerr, Radarr, Sonarr, Tdarr, qBittorrent e Prowlarr dietro Gluetun, Trawl al posto di Flaresolverr | `media/docker-compose.yml` |
+| [utils](utils/) | `utils` | Nextcloud, Cloudflare Tunnel, Syncthing, File Browser, Gitea, Crafty | `utils/docker-compose.yml` |
+| [homepage](homepage/) | `homepage` | Dashboard Homepage | `homepage/docker-compose.yml` |
+| [pihole](pihole/) | `pihole` (prima `pihole_stack`) | DNS Pi-hole sulla rete dell'host | `pihole/docker-compose.yml` |
+| [n8n](n8n/) | `n8n` | n8n con Postgres | `n8n/docker-compose.yml` |
+| [pterodactyl](pterodactyl/) | `pterodactyl` | Pannello Pterodactyl e Wings | `pterodactyl/docker-compose.yml` |
+| [free-games-claimer](free-games-claimer/) | `free_games` | Riscatto giochi gratis, con Watchtower limitato a questo stack | `free-games-claimer/docker-compose.yml` |
+
+Il sito portfolio resta nel repository
+[BeliMat1260/Portfolio](https://github.com/BeliMat1260/Portfolio): il compose path lì è
+`docker-compose.yml`. Il tunnel che pubblica `mattiabelli.com` è lo stack `utils`.
+
+Project Zomboid non è in questo repository. Nel backup c'erano solo le variabili
+`PZ_*` dentro `utils`, senza un servizio.
 
 ## Struttura del repository
 
@@ -75,6 +88,34 @@ Il riquadro di Portainer "stack.env file operation" riguarda solo i compose che 
    docker compose --env-file <nome-stack>/stack.env.example -f <nome-stack>/docker-compose.yml config
    ```
 
+## Passare dagli stack incollati su Portainer a questo repository
+
+Gli stack `media`, `utils`, `homepage`, `pihole`, `n8n` e `pterodactyl` sono la
+versione da git di quelli che oggi vivono solo su Portainer. I dati restano
+sull'host; cambia solo da dove Portainer legge il compose.
+
+1. Apri lo stack vecchio e copia le *Environment variables*. Le password non
+   sono in git.
+2. Per n8n copia anche `N8N_ENCRYPTION_KEY` dal compose attuale. Una chiave
+   diversa rende illeggibili le credenziali dei workflow.
+3. Per Pi-hole copia la cartella `etc-pihole` dello stack (`/data/compose/<id>/etc-pihole`)
+   in `/DATA/AppData/pihole` prima di cancellare lo stack.
+4. Ruota il token del tunnel Cloudflare: era scritto in chiaro nel compose di
+   `utils`. Il valore nuovo va in `CLOUDFLARED_TUNNEL_TOKEN`.
+5. Rimuovi lo stack vecchio da *Stacks*. Non cancellare le cartelle in
+   `/DATA/AppData` né i volumi `n8n_n8n-postgres`, `n8n_n8n-data`,
+   `utils_filebrowser_*` e `pterodactyl_database_data`.
+6. *Add stack* → *Repository* con il compose path della tabella e il nome
+   indicato in *Nome su Portainer*. Incolla `stack.env.example` e sostituisci
+   i segnaposto.
+
+`media` usa la subnet `172.28.10.0/24`, `utils` usa `172.20.0.0/16`. Vanno
+tenute diverse tra loro e diverse da `docker0`.
+
+Gli stack dell'homelab non includono Watchtower. Si aggiornano con *Update the
+stack*. L'unico Watchtower del repository è quello di `free-games-claimer` e
+non tocca gli altri container.
+
 ## Sicurezza
 
 Il repository è **pubblico**. Password, token e webhook vanno inseriti solo nelle
@@ -89,4 +130,4 @@ Il repository è **pubblico**. Password, token e webhook vanno inseriti solo nel
 | `open /data/compose/<n>/...docker-compose.yml: no such file or directory` | *Compose path* sbagliato | Percorso relativo alla root del repository, es. `free-games-claimer/docker-compose.yml` |
 | `required variable <NOME> is missing a value` | Variabile mancante nelle *Environment variables* | Aggiungila (l'elenco completo è in `stack.env.example`) |
 | `container name "/<nome>" is already in use` | Esiste ancora un container creato a mano o da un tentativo precedente | Eliminalo da *Containers* (i dati nella cartella di configurazione restano) e rifai il deploy |
-| `Pool overlaps with other one on this address space` | Due reti Docker con la stessa subnet | Non fissare la subnet nelle reti degli stack, lascia che la scelga Docker |
+| `Pool overlaps with other one on this address space` | Due reti Docker con la stessa subnet | `media` è `172.28.10.0/24` e `utils` è `172.20.0.0/16`. Non riusare una delle due per un altro stack |

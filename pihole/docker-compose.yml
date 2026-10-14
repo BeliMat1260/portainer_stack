@@ -1,0 +1,22 @@
+name: pihole
+
+services:
+  pihole:
+    image: pihole/pihole:latest
+    container_name: pihole
+    restart: unless-stopped
+    pull_policy: always
+    # Rete dell'host: Pi-hole deve ascoltare la porta 53, e in host mode
+    # le porte non si mappano. L'interfaccia web sta su WEBUI_PORT_PIHOLE.
+    network_mode: host
+    environment:
+      TZ: ${TIMEZONE:?err}
+      FTLCONF_webserver_api_password: ${PIHOLE_PASSWORD:?err}
+      FTLCONF_webserver_port: ${WEBUI_PORT_PIHOLE:?err}
+      FTLCONF_dns_listeningMode: all
+      FTLCONF_DNS_UPSTREAM: ${PIHOLE_UPSTREAMS:?err}
+    volumes:
+      - ${FOLDER_FOR_CONFIGS:?err}/pihole:/etc/pihole
+    cap_add:
+      - NET_ADMIN
+      - SYS_TIME

@@ -1,0 +1,82 @@
+name: pterodactyl
+
+services:
+  database:
+    image: mariadb:10.5
+    container_name: pterodactyl-db
+    restart: unless-stopped
+    pull_policy: always
+    command: --default-authentication-plugin=mysql_native_password
+    volumes:
+      - database_data:/var/lib/mysql
+    environment:
+      MYSQL_PASSWORD: ${PTERO_DB_PASSWORD:?err}
+      MYSQL_ROOT_PASSWORD: ${PTERO_DB_ROOT_PASSWORD:?err}
+      MYSQL_DATABASE: panel
+      MYSQL_USER: pterodactyl
+    networks:
+      - pterodactyl_net
+
+  cache:
+    image: redis:alpine
+    container_name: pterodactyl-cache
+    restart: unless-stopped
+    pull_policy: always
+    networks:
+      - pterodactyl_net
+
+  panel:
+    image: ghcr.io/pterodactyl/panel:latest
+    container_name: pterodactyl-panel
+    restart: unless-stopped
+    pull_policy: always
+    ports:
+      - "${WEBUI_PORT_PTERODACTYL:?err}:80"
+    environment:
+      APP_URL: ${PTERO_APP_URL:?err}
+      APP_TIMEZONE: ${TIMEZONE:?err}
+      APP_SERVICE_AUTHOR: ${PTERO_SERVICE_AUTHOR:?err}
+      TRUSTED_PROXIES: "*"
+      DB_HOST: database
+      DB_PORT: 3306
+      DB_DATABASE: panel
+      DB_USERNAME: pterodactyl
+      DB_PASSWORD: ${PTERO_DB_PASSWORD:?err}
+      REDIS_HOST: cache
+      REDIS_PORT: 6379
+    depends_on:
+      - database
+      - cache
+    volumes:
+      - ${FOLDER_FOR_CONFIGS:?err}/pterodactyl/panel:/app/var/
+    networks:
+      - pterodactyl_net
+
+  wings:
+    image: ghcr.io/pterodactyl/wings:latest
+    container_name: pterodactyl-wings
+    restart: unless-stopped
+    pull_policy: always
+    ports:
+      - "${WINGS_API_PORT:?err}:8080"
+      - "${WINGS_SFTP_PORT:?err}:2022"
+    environment:
+      TZ: ${TIMEZONE:?err}
+      WINGS_UID: ${WINGS_UID:?err}
+      WINGS_GID: ${WINGS_GID:?err}
+      WINGS_USERNAME: pterodactyl
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+      - /var/lib/pterodactyl:/var/lib/pterodactyl
+      - /var/lib/pterodactyl/archives:/var/lib/pterodactyl/archives
+      - /var/log/pterodactyl:/var/log/pterodactyl
+      - ${FOLDER_FOR_CONFIGS:?err}/pterodactyl/wings:/etc/pterodactyl
+    networks:
+      - pterodactyl_net
+
+volumes:
+  database_data:
+
+networks:
+  pterodactyl_net:
+    driver: bridge
