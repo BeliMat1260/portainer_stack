@@ -1,71 +1,58 @@
-# Homelab
+# portainer_stack
 
-Gli stack Docker di casa, da distribuire con Portainer da questo repository.
-Ogni cartella è uno stack indipendente.
+Homelab in Docker Compose, uno stack per cartella, da installare con Portainer a partire da questo repository.
 
-Il repository è pubblico. Le password stanno nelle *Environment variables* di
-Portainer. `stack.env.example` contiene solo segnaposto.
+[Stack](#stack) · [Installazione](#installazione) · [Aggiornamenti](#aggiornamenti) · [Reti](#reti)
+
+> Repository pubblico. Ogni `stack.env.example` contiene segnaposto. Password, token e chiavi si incollano nelle *Environment variables* di Portainer.
 
 ## Stack
 
-| Stack | Nome su Portainer | Contenuto | Compose path |
-| --- | --- | --- | --- |
-| [media](media/) | `media` | Jellyfin, Seerr, Radarr, Sonarr, Tdarr, qBittorrent, Prowlarr, Gluetun, Trawl | `media/docker-compose.yml` |
-| [utils](utils/) | `utils` | Nextcloud, Cloudflare Tunnel, Syncthing, File Browser, Gitea, Crafty | `utils/docker-compose.yml` |
-| [homepage](homepage/) | `homepage` | Dashboard Homepage | `homepage/docker-compose.yml` |
-| [pihole](pihole/) | `pihole` | DNS Pi-hole | `pihole/docker-compose.yml` |
-| [n8n](n8n/) | `n8n` | n8n e Postgres | `n8n/docker-compose.yml` |
-| [pterodactyl](pterodactyl/) | `pterodactyl` | Pannello Pterodactyl e Wings | `pterodactyl/docker-compose.yml` |
-| [free-games-claimer](free-games-claimer/) | `free_games` | Riscatto dei giochi gratis, con Watchtower | `free-games-claimer/docker-compose.yml` |
+| Cartella | Progetto | Contenuto |
+| --- | --- | --- |
+| [media](media/) | `media-stack` | Jellyfin, Seerr, Radarr, Sonarr, Prowlarr, qBittorrent, Gluetun, Trawl, Tdarr |
+| [utils](utils/) | `utils` | Nextcloud, Cloudflare Tunnel, Syncthing, File Browser, Gitea, Crafty |
+| [homepage](homepage/) | `homepage` | Dashboard dei servizi |
+| [pihole](pihole/) | `pihole` | DNS della rete locale |
+| [n8n](n8n/) | `n8n` | Automazioni, con Postgres |
+| [pterodactyl](pterodactyl/) | `pterodactyl` | Pannello di gioco e Wings |
+| [free-games-claimer](free-games-claimer/) | `free_games` | Riscatto dei giochi gratis |
 
-## Accendere uno stack
+Il progetto è il valore di `name:` nel compose: è quello che dà il nome a reti e volumi. Su Portainer lo stack può chiamarsi in un altro modo. [free-games-claimer](free-games-claimer/) è l'eccezione, perché il compose non fissa `name:` e lo stack va creato come `free_games`.
 
-1. *Stacks* → *Add stack* → **Repository**. Il nome è quello della tabella.
-2. Git:
+## Installazione
 
-   | Campo | Valore |
-   | --- | --- |
-   | Authentication | spenta, il repository è pubblico |
-   | Repository URL | `https://github.com/BeliMat1260/portainer_stack` |
-   | Repository reference | `refs/heads/main` |
-   | Compose path | il percorso della tabella |
+1. In Portainer: *Stacks* → *Add stack* → **Repository**.
+2. URL `https://github.com/BeliMat1260/portainer_stack`, reference `refs/heads/main`. L'autenticazione del repository resta disattivata.
+3. *Compose path*: il file `docker-compose.yml` della cartella, per esempio `media/docker-compose.yml`.
+4. *Environment variables* → *Advanced mode*: incolla il `stack.env.example` della stessa cartella e sostituisci i segnaposto, senza virgolette.
 
-3. *Environment variables* → *Advanced mode*: incolla `stack.env.example` e
-   sostituisci i segnaposto. Senza virgolette intorno ai valori.
-4. *Deploy the stack*.
-
-Le variabili arrivano al compose come `${VARIABILE}`.
+Il compose legge `${VARIABILE}`. Se manca un valore obbligatorio il deploy si ferma con `required variable … is missing a value`.
 
 ## Aggiornamenti
 
-`pull_policy: always` riscarica l'immagine quando su Portainer fai *Update the
-stack*. L'unico Watchtower è in [free-games-claimer](free-games-claimer/) e
-aggiorna solo i container con scope `free-games-claimer`.
+*Update the stack* riscarica le immagini (`pull_policy: always`). L'unico aggiornamento automatico è il Watchtower di [free-games-claimer](free-games-claimer/), limitato ai container di quello stack.
 
-Con *GitOps updates* → *Polling*, Portainer ridistribuisce lo stack quando il
-compose cambia su `main`. *Force redeployment* spento, altrimenti i container
-ripartono a ogni controllo.
+Con *GitOps updates* → *Polling*, Portainer segue `main`. *Force redeployment* resta spento.
 
-`media` usa la subnet `172.28.10.0/24`, `utils` usa `172.20.0.0/16`.
+## Reti
 
-## Aggiungere uno stack
-
-1. Nuova cartella, con `docker-compose.yml`, `stack.env.example` e `README.md`.
-2. Nel compose: `pull_policy: always`, `restart: unless-stopped`, variabili
-   obbligatorie scritte `${NOME:?err}`, dati in `${FOLDER_FOR_CONFIGS}/<nome>`.
-3. Una riga nella tabella qui sopra.
-4. Prima del commit:
-
-   ```bash
-   docker compose --env-file <nome>/stack.env.example -f <nome>/docker-compose.yml config
-   ```
-
-## Errori di Portainer
-
-| Errore | Cosa fare |
+| Progetto | Subnet |
 | --- | --- |
-| `additional properties '<nome>' not allowed` | Usa il compose del repository |
-| `open /data/compose/<n>/... no such file` | *Compose path* relativo alla root, per esempio `media/docker-compose.yml` |
-| `required variable <NOME> is missing a value` | Aggiungi la variabile elencata in `stack.env.example` |
-| `container name "/<nome>" is already in use` | Elimina il container esistente da *Containers* |
-| `Pool overlaps with other one` | `media` è `172.28.10.0/24`, `utils` è `172.20.0.0/16` |
+| `media-stack` | `172.28.10.0/24` |
+| `utils` | `172.20.0.0/16` |
+
+## In ogni cartella
+
+```text
+<stack>/
+├── docker-compose.yml
+├── stack.env.example
+└── README.md
+```
+
+Per aggiungerne uno: stessa struttura, variabili obbligatorie nella forma `${NOME:?err}`, una riga nella tabella, poi
+
+```bash
+docker compose --env-file <stack>/stack.env.example -f <stack>/docker-compose.yml config
+```

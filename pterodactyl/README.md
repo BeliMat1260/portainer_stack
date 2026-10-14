@@ -1,25 +1,31 @@
 # Pterodactyl
 
-Pannello per i server di gioco, con MariaDB 10.5, Redis e Wings. Wings usa il
-socket Docker dell'host per creare i server.
+Pannello per i server di gioco, con MariaDB 10.5, Redis e Wings. Wings crea i server tramite il socket Docker dell'host.
 
-Nome su Portainer: `pterodactyl`. Il volume del database è
-`pterodactyl_database_data`.
+| | |
+| --- | --- |
+| Progetto | `pterodactyl` |
+| Compose | [docker-compose.yml](docker-compose.yml) |
+| Variabili | [stack.env.example](stack.env.example) |
+| Database | MariaDB, utente `pterodactyl`, database `panel` |
 
-Compose path: `pterodactyl/docker-compose.yml`.
+Il volume del database è `pterodactyl_database_data`. Le porte sono quelle di `stack.env.example`. [Installazione](../README.md#installazione).
+
+## Porte
 
 | Servizio | Porta sull'host |
 | --- | --- |
-| Pannello | `WEBUI_PORT_PTERODACTYL` (`5080`) |
-| API di Wings | `WINGS_API_PORT` (`8480`) |
-| SFTP di Wings | `WINGS_SFTP_PORT` (`2022`) |
+| Pannello | `5080` |
+| API di Wings | `8480` |
+| SFTP di Wings | `2022` |
 
-`PTERO_APP_URL` è l'indirizzo del pannello, porta inclusa.
-I file del pannello sono in `${FOLDER_FOR_CONFIGS}/pterodactyl/panel`, la
-configurazione di Wings in `${FOLDER_FOR_CONFIGS}/pterodactyl/wings`.
+## Dati
 
-`PTERO_DB_PASSWORD` e `PTERO_DB_ROOT_PASSWORD` sono le password di MariaDB.
-Su un database già creato vanno riusate quelle della prima inizializzazione.
+| Percorso | Contenuto |
+| --- | --- |
+| `/DATA/AppData/pterodactyl/panel` | File del pannello |
+| `/DATA/AppData/pterodactyl/wings` | Configurazione di Wings |
+| `/var/lib/pterodactyl` | Server di gioco, sull'host |
+| `pterodactyl_database_data` | Dati di MariaDB |
 
-Il modello è [`stack.env.example`](stack.env.example).
-L'aggiornamento delle immagini è *Update the stack* su Portainer.
+L'indirizzo del pannello è `PTERO_APP_URL`. Wings gira con uid e gid `988`. `PTERO_DB_PASSWORD` e `PTERO_DB_ROOT_PASSWORD` sono le password con cui MariaDB è stato creato.

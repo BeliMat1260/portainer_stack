@@ -1,45 +1,51 @@
 # Media
 
-Film, serie, richieste e download. Jellyfin riproduce, Seerr raccoglie le
-richieste, Radarr e Sonarr le mandano a qBittorrent. Prowlarr cerca gli
-indexer. qBittorrent, Prowlarr e Trawl escono da Gluetun. Tdarr transcodifica.
+Libreria, richieste e download. Jellyfin riproduce, Seerr raccoglie le richieste, Radarr e Sonarr le passano a qBittorrent. Prowlarr cerca gli indexer. Il traffico di qBittorrent, Prowlarr e Trawl esce da Gluetun. Tdarr transcodifica.
 
-Nome su Portainer: `media`.
-Compose path: `media/docker-compose.yml`.
+| | |
+| --- | --- |
+| Progetto | `media-stack` |
+| Compose | [docker-compose.yml](docker-compose.yml) |
+| Variabili | [stack.env.example](stack.env.example) |
+| Rete | `media-network` · `172.28.10.0/24` |
 
-## Servizi
+Le porte sono quelle di `stack.env.example`. [Installazione](../README.md#installazione).
 
-| Servizio | Rete | Porta sull'host |
-| --- | --- | --- |
-| Gluetun | `media-network` (`172.28.10.0/24`) | control `9075`, proxy HTTP `8888`, Shadowsocks `8388` |
-| qBittorrent | rete di Gluetun | `WEBUI_PORT_QBITTORRENT` (`8200`), torrent `6881` TCP/UDP |
-| Prowlarr | rete di Gluetun | `WEBUI_PORT_PROWLARR` (`9696`) |
-| Trawl e Redis | rete di Gluetun | `FLARESOLVERR_PORT` (`8191`). Redis è su `localhost` |
-| Jellyfin | `media-network` | `WEBUI_PORT_JELLYFIN` (`8096`) |
-| Seerr | `media-network` | `WEBUI_PORT_SEERR` (`5055`) |
-| Radarr | `media-network` | `WEBUI_PORT_RADARR` (`7878`) |
-| Sonarr | `media-network` | `WEBUI_PORT_SONARR` (`8989`) |
-| Tdarr | `media-network` | web `8265`, server `8266` |
+## Dietro la VPN
 
-Proxy e Shadowsocks di Gluetun sono aperti sulla LAN.
+Questi servizi condividono la rete di Gluetun, che pubblica le loro porte.
 
-Jellyfin, Seerr, Radarr e Sonarr usano `DNS_PRIMARY` e `DNS_SECONDARY`
-(`8.8.8.8` e `1.1.1.1`).
+| Servizio | Porta sull'host |
+| --- | --- |
+| qBittorrent | web `8200`, torrent `6881` TCP/UDP |
+| Prowlarr | `9696` |
+| Trawl | `8191` |
+| Redis di Trawl | `localhost`, dentro la rete di Gluetun |
+
+Gluetun pubblica anche il control server `9075`, il proxy HTTP `8888` e Shadowsocks `8388`. Proxy e Shadowsocks sono raggiungibili dalla LAN (`LOCAL_SUBNET`).
+
+## Sulla rete dello stack
+
+| Servizio | Porta sull'host |
+| --- | --- |
+| Jellyfin | `8096` |
+| Seerr | `5055` |
+| Radarr | `7878` |
+| Sonarr | `8989` |
+| Tdarr | web `8265`, server `8266` |
+
+Jellyfin, Seerr, Radarr e Sonarr risolvono i nomi con `DNS_PRIMARY` e `DNS_SECONDARY`. Prowlarr, qBittorrent, Radarr e Sonarr usano il tema `TP_THEME` (`nord`).
 
 ## Dati
 
-| Percorso sull'host | Contenuto |
+| Percorso | Contenuto |
 | --- | --- |
-| `${FOLDER_FOR_CONFIGS}` (`/DATA/AppData/media-stack`) | Config di Gluetun, Jellyfin, Seerr, Prowlarr, qBittorrent, Radarr, Sonarr, Tdarr, Redis di Trawl |
-| `${FOLDER_FOR_MEDIA}` (`/hdd/Media`) | Libreria, montata in Jellyfin e Tdarr |
-| `${FOLDER_FOR_DOWNLOADS}` (`/hdd/Downloads`) | Download di qBittorrent |
-| `${FOLDER_FOR_HDD}` (`/hdd`) | Disco intero visto da Radarr e Sonarr su `/hdd` |
-| `${TDARR_TRANSCODE_PATH}` | Cache di transcodifica |
+| `/DATA/AppData/media-stack` | Configurazioni dei servizi |
+| `/hdd/Media` | Libreria per Jellyfin e Tdarr |
+| `/hdd/Downloads` | Download di qBittorrent |
+| `/hdd` | Disco visto da Radarr e Sonarr |
+| `/mnt/temp/tdarr_transcode_cache` | Cache di transcodifica |
 
-## Variabili
+## VPN
 
-Il modello è [`stack.env.example`](stack.env.example). Obbligatorie per la VPN:
-`VPN_TYPE`, `VPN_SERVICE_PROVIDER`, `VPN_USERNAME`, `VPN_PASSWORD`. Con
-`VPN_TYPE=openvpn` le variabili WireGuard restano vuote.
-
-L'aggiornamento delle immagini è *Update the stack* su Portainer.
+Proton via OpenVPN: `VPN_SERVICE_PROVIDER=protonvpn`, `VPN_TYPE=openvpn`, credenziali in `VPN_USERNAME` e `VPN_PASSWORD`. Il paese nell'esempio è `Romania`. Con OpenVPN i campi WireGuard restano vuoti.
