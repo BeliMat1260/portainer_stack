@@ -1,27 +1,17 @@
 # Homepage
 
-La bacheca. Una pagina sola che mostra cosa è acceso in casa: i container, lo
-spazio su disco, i link alle altre stanze.
+La bacheca della casa: container, spazio disco e link agli altri servizi.
+Il progetto è [Homepage](https://github.com/gethomepage/homepage).
 
-[Homepage](https://github.com/gethomepage/homepage) ascolta sulla porta
-`WEBUI_PORT_HOMEPAGE`. In casa è la `80`.
-
-Compose path: `homepage/docker-compose.yml`. Nome stack: `homepage`.
-
-## Cosa tiene acceso
+Nome su Portainer: `homepage`.
+Compose path: `homepage/docker-compose.yml`.
+Porta: `WEBUI_PORT_HOMEPAGE` (`80`).
 
 | Pezzo | Dove sta |
 | --- | --- |
-| Widget e `services.yaml` | `${FOLDER_FOR_CONFIGS}/homepage`, oggi `/DATA/AppData/homepage` |
-| Stato dei container | il socket Docker. Chi apre la bacheca vede lo stato dei container |
-| Dischi | `${FOLDER_FOR_HDD}` montato su `/hdd` |
-| Host ammessi | `HOMEPAGE_ALLOWED_HOSTS`, nomi separati da virgole, senza spazi |
+| Widget e configurazione | `${FOLDER_FOR_CONFIGS}/homepage` (`/DATA/AppData/homepage`) |
+| Stato dei container | socket Docker |
+| Dischi | `${FOLDER_FOR_HDD}` (`/hdd`) montato su `/hdd` |
+| Host accettati | `HOMEPAGE_ALLOWED_HOSTS`, separati da virgole, senza spazi |
 
-## Accenderla al posto di quella già in piedi
-
-1. Incolla [`stack.env.example`](stack.env.example) e controlla gli host ammessi.
-2. Rimuovi lo stack vecchio senza cancellare `/DATA/AppData/homepage`.
-3. Deploy da git. Il container si chiama ancora `homepage`: se il vecchio è
-   ancora lì, eliminalo da *Containers* e rilancia.
-
-I widget che hai già disegnato restano nella cartella di config.
+Il modello delle variabili è [`stack.env.example`](stack.env.example).
