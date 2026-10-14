@@ -1,24 +1,35 @@
-# Stack Portainer: pterodactyl
+# Pterodactyl
 
-Pannello Pterodactyl, MariaDB 10.5, Redis e Wings. Compose path:
-`pterodactyl/docker-compose.yml`. Nome stack su Portainer: `pterodactyl`,
+I server di gioco. Il pannello è la reception, Wings è chi accende davvero le
+istanze parlando con Docker sull'host. In mezzo ci sono MariaDB 10.5 e Redis.
+
+Compose path: `pterodactyl/docker-compose.yml`. Nome stack: `pterodactyl`,
 così il volume `pterodactyl_database_data` resta quello già creato.
 
-Le password del database non sono più scritte nel compose. Nel file precedente
-i segnaposto erano `password_segreta_db` e `password_segreta_root`: se il
-database è già stato inizializzato con quelli, vanno rimessi identici in
-`PTERO_DB_PASSWORD` e `PTERO_DB_ROOT_PASSWORD`. Una password nuova non entra
-in un volume MySQL già creato.
+## Le porte
 
-`PTERO_APP_URL` è l'URL con cui apri il pannello, porta inclusa. Wings parla
-con Docker tramite il socket dell'host: va trattato come un servizio di
-amministrazione, non esposto su internet senza un proxy.
+| Pezzo | Porta sull'host | Dentro al container |
+| --- | --- | --- |
+| Pannello | `WEBUI_PORT_PTERODACTYL` (`5080`) | `80` |
+| API di Wings | `WINGS_API_PORT` (`8480`) | `8080` |
+| SFTP di Wings | `WINGS_SFTP_PORT` (`2022`) | `2022` |
 
-I volumi nominati `panel_data` e `wings_config` del compose vecchio non erano
-montati da nessun servizio. Non sono stati ridichiarati. I dati veri del
-pannello sono in `${FOLDER_FOR_CONFIGS}/pterodactyl/panel` e la config di
-Wings in `${FOLDER_FOR_CONFIGS}/pterodactyl/wings`.
+`PTERO_APP_URL` è l'indirizzo con cui apri il pannello, porta inclusa, per
+esempio `http://192.168.1.90:5080`. Wings monta il socket Docker: è un servizio
+da amministrazione. Davanti a internet ci vuole un proxy, non la porta nuda.
 
-`restart` è `unless-stopped` al posto di `always`: fermare il container da
-Portainer lo lascia fermo. Nessun Watchtower, l'immagine `:latest` del pannello
-si aggiorna solo con *Update the stack*.
+## Il database già esistente
+
+`PTERO_DB_PASSWORD` e `PTERO_DB_ROOT_PASSWORD` devono essere le password della
+prima creazione del volume. Nel compose precedente i segnaposto erano
+`password_segreta_db` e `password_segreta_root`: se il database è nato con
+quelli, vanno rimessi identici. Una password nuova non apre un MySQL già
+inizializzato.
+
+I file del pannello stanno in `${FOLDER_FOR_CONFIGS}/pterodactyl/panel`, la
+configurazione di Wings in `${FOLDER_FOR_CONFIGS}/pterodactyl/wings`. I volumi
+nominati `panel_data` e `wings_config` del compose vecchio non erano montati
+da nessuno e non sono stati ridichiarati.
+
+`restart: unless-stopped` lascia fermo un container che hai spento da
+Portainer. L'immagine `:latest` del pannello si aggiorna con *Update the stack*.

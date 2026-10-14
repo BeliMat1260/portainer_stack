@@ -1,133 +1,102 @@
-# portainer_stack
+# Homelab
 
-Raccolta di stack Docker Compose per l'home server, pensati per essere distribuiti con
-**Portainer** direttamente da questo repository Git (*Stacks* → *Add stack* → *Repository*).
+Gli stack Docker di casa, pronti da distribuire con Portainer da questo
+repository. Ogni cartella è una stanza a sé: si accende, si aggiorna e si
+spegne senza toccare le altre.
 
-Ogni cartella è uno stack indipendente: si distribuisce, si aggiorna e si rimuove senza
-toccare gli altri.
+Il repository è pubblico. Le password restano nelle *Environment variables*
+di Portainer. `stack.env.example` contiene solo segnaposto.
 
-## Stack disponibili
+## Le stanze
 
-| Stack | Nome su Portainer | Descrizione | Compose path |
+| Stack | Nome su Portainer | A cosa serve | Compose path |
 | --- | --- | --- | --- |
-| [media](media/) | `media` (prima `stack`) | Jellyfin, Seerr, Radarr, Sonarr, Tdarr, qBittorrent e Prowlarr dietro Gluetun, Trawl al posto di Flaresolverr | `media/docker-compose.yml` |
-| [utils](utils/) | `utils` | Nextcloud, Cloudflare Tunnel, Syncthing, File Browser, Gitea, Crafty | `utils/docker-compose.yml` |
-| [homepage](homepage/) | `homepage` | Dashboard Homepage | `homepage/docker-compose.yml` |
-| [pihole](pihole/) | `pihole` (prima `pihole_stack`) | DNS Pi-hole sulla rete dell'host | `pihole/docker-compose.yml` |
-| [n8n](n8n/) | `n8n` | n8n con Postgres | `n8n/docker-compose.yml` |
-| [pterodactyl](pterodactyl/) | `pterodactyl` | Pannello Pterodactyl e Wings | `pterodactyl/docker-compose.yml` |
-| [free-games-claimer](free-games-claimer/) | `free_games` | Riscatto giochi gratis, con Watchtower limitato a questo stack | `free-games-claimer/docker-compose.yml` |
+| [media](media/) | `media` | Film, serie, richieste e download. Il traffico torrent esce dalla VPN | `media/docker-compose.yml` |
+| [utils](utils/) | `utils` | Nextcloud, Git, file, Minecraft e il tunnel che pubblica i siti | `utils/docker-compose.yml` |
+| [homepage](homepage/) | `homepage` | La bacheca che riassume il resto della casa | `homepage/docker-compose.yml` |
+| [pihole](pihole/) | `pihole` | DNS della LAN, con la web UI sulla porta 8081 | `pihole/docker-compose.yml` |
+| [n8n](n8n/) | `n8n` | Automazioni, con Postgres che tiene i workflow | `n8n/docker-compose.yml` |
+| [pterodactyl](pterodactyl/) | `pterodactyl` | Pannello e Wings per i server di gioco | `pterodactyl/docker-compose.yml` |
+| [free-games-claimer](free-games-claimer/) | `free_games` | Riscatta i giochi gratis e si aggiorna da solo | `free-games-claimer/docker-compose.yml` |
 
-Il sito portfolio resta nel repository
-[BeliMat1260/Portfolio](https://github.com/BeliMat1260/Portfolio): il compose path lì è
-`docker-compose.yml`. Il tunnel che pubblica `mattiabelli.com` è lo stack `utils`.
+Il sito personale vive in
+[BeliMat1260/Portfolio](https://github.com/BeliMat1260/Portfolio). Lo pubblica
+il tunnel Cloudflare dello stack `utils`.
 
-Project Zomboid non è in questo repository. Nel backup c'erano solo le variabili
-`PZ_*` dentro `utils`, senza un servizio.
+Project Zomboid non ha uno stack qui. Nel vecchio Portainer c'erano solo
+variabili `PZ_*`, senza un servizio.
 
-## Struttura del repository
+## Accendere uno stack
 
-```
-portainer_stack/
-├── .gitignore                 # esclude ogni file *.env dai commit
-├── README.md                  # questo file
-└── <nome-stack>/
-    ├── docker-compose.yml     # definizione dello stack
-    ├── stack.env.example      # variabili da impostare su Portainer (solo segnaposto)
-    └── README.md              # documentazione dello stack
-```
-
-## Distribuire uno stack con Portainer
-
-1. *Stacks* → *Add stack*, dai un nome allo stack e scegli **Repository**.
-2. Compila la sezione *Git repository*:
+1. *Stacks* → *Add stack* → **Repository**. Il nome è quello della tabella.
+2. Git:
 
    | Campo | Valore |
    | --- | --- |
-   | Authentication | spenta (il repository è pubblico) |
+   | Authentication | spenta, il repository è pubblico |
    | Repository URL | `https://github.com/BeliMat1260/portainer_stack` |
    | Repository reference | `refs/heads/main` |
-   | Compose path | `<nome-stack>/docker-compose.yml` (relativo alla root del repository) |
+   | Compose path | il percorso della tabella |
 
-3. *Environment variables* → *Advanced mode*: incolla il contenuto di
-   `<nome-stack>/stack.env.example` e sostituisci i segnaposto con i valori veri.
-   Niente virgolette intorno ai valori.
+3. *Environment variables* → *Advanced mode*: incolla `stack.env.example` e
+   sostituisci i segnaposto. Senza virgolette intorno ai valori.
 4. *Deploy the stack*.
 
-Il riquadro di Portainer "stack.env file operation" riguarda solo i compose che usano
-`env_file: stack.env`. Gli stack di questo repository leggono le variabili con la sintassi
-`${VARIABILE}`, quindi basta inserirle nella sezione *Environment variables*.
+Le variabili arrivano al compose come `${VARIABILE}`. Il riquadro "stack.env
+file operation" di Portainer serve solo ai compose che usano `env_file:`.
 
-## Aggiornamenti
+## Dal compose incollato a mano a git
 
-- **Immagini:** gli stack che lo prevedono includono un'istanza di
-  [Watchtower](https://github.com/nicholas-fedor/watchtower) limitata al solo stack (label
-  `com.centurylinklabs.watchtower.scope`), che scarica le nuove versioni e ricrea i container
-  mantenendo volumi, porte e variabili. Tutti i servizi hanno anche `pull_policy: always`,
-  quindi *Update the stack* su Portainer riscarica sempre l'immagine.
-- **File del repository:** attivando *GitOps updates* → *Polling* sullo stack, Portainer
-  ridistribuisce lo stack quando cambia il `docker-compose.yml` su `main`. Lasciare spento
-  *Force redeployment*, altrimenti i container vengono riavviati a ogni controllo.
+I dati restano sull'host. Cambia solo il posto da cui Portainer legge il file.
 
-## Aggiungere un nuovo stack
-
-1. Crea una cartella con il nome dello stack.
-2. Aggiungi `docker-compose.yml` con:
-   - `pull_policy: always` e `restart: unless-stopped` su ogni servizio;
-   - variabili obbligatorie nella forma `${NOME:?err}`, così il deploy si ferma subito
-     con un messaggio chiaro se ne manca una;
-   - dati persistenti montati in `${FOLDER_FOR_CONFIGS}/<nome-stack>`;
-   - se serve l'aggiornamento automatico, un servizio Watchtower con `WATCHTOWER_SCOPE`
-     uguale al nome dello stack e le label `watchtower.enable` / `watchtower.scope` sui
-     container da aggiornare (vedi [free-games-claimer](free-games-claimer/docker-compose.yml)).
-3. Aggiungi `stack.env.example` con **solo segnaposto**, mai credenziali vere.
-4. Aggiungi un `README.md` e una riga nella tabella *Stack disponibili* qui sopra.
-5. Verifica il file prima del commit:
-
-   ```bash
-   docker compose --env-file <nome-stack>/stack.env.example -f <nome-stack>/docker-compose.yml config
-   ```
-
-## Passare dagli stack incollati su Portainer a questo repository
-
-Gli stack `media`, `utils`, `homepage`, `pihole`, `n8n` e `pterodactyl` sono la
-versione da git di quelli che oggi vivono solo su Portainer. I dati restano
-sull'host; cambia solo da dove Portainer legge il compose.
-
-1. Apri lo stack vecchio e copia le *Environment variables*. Le password non
-   sono in git.
-2. Per n8n copia anche `N8N_ENCRYPTION_KEY` dal compose attuale. Una chiave
-   diversa rende illeggibili le credenziali dei workflow.
-3. Per Pi-hole copia la cartella `etc-pihole` dello stack (`/data/compose/<id>/etc-pihole`)
-   in `/DATA/AppData/pihole` prima di cancellare lo stack.
-4. Ruota il token del tunnel Cloudflare: era scritto in chiaro nel compose di
-   `utils`. Il valore nuovo va in `CLOUDFLARED_TUNNEL_TOKEN`.
-5. Rimuovi lo stack vecchio da *Stacks*. Non cancellare le cartelle in
-   `/DATA/AppData` né i volumi `n8n_n8n-postgres`, `n8n_n8n-data`,
-   `utils_filebrowser_*` e `pterodactyl_database_data`.
-6. *Add stack* → *Repository* con il compose path della tabella e il nome
-   indicato in *Nome su Portainer*. Incolla `stack.env.example` e sostituisci
-   i segnaposto.
+1. Copia le *Environment variables* dello stack vecchio. Le password non sono in git.
+2. Per n8n copia `N8N_ENCRYPTION_KEY` dal compose attuale. Una chiave diversa
+   rende illeggibili le credenziali dei workflow.
+3. Per Pi-hole copia `/data/compose/<id>/etc-pihole` in `/DATA/AppData/pihole`
+   prima di rimuovere lo stack.
+4. Crea un token nuovo del tunnel Cloudflare e mettilo in
+   `CLOUDFLARED_TUNNEL_TOKEN`. Quello precedente era scritto nel compose.
+5. Rimuovi lo stack vecchio. Lascia intatte le cartelle in `/DATA/AppData` e i
+   volumi `n8n_n8n-postgres`, `n8n_n8n-data`, `utils_filebrowser_*`,
+   `pterodactyl_database_data`.
+6. Ricrea lo stack da questo repository, con il nome della tabella.
 
 `media` usa la subnet `172.28.10.0/24`, `utils` usa `172.20.0.0/16`. Vanno
 tenute diverse tra loro e diverse da `docker0`.
 
-Gli stack dell'homelab non includono Watchtower. Si aggiornano con *Update the
-stack*. L'unico Watchtower del repository è quello di `free-games-claimer` e
-non tocca gli altri container.
+## Aggiornamenti
 
-## Sicurezza
+`pull_policy: always` riscarica l'immagine quando su Portainer fai *Update the
+stack*. Gli stack di casa si aggiornano così, a mano: un update notturno di
+Jellyfin, Nextcloud o n8n può rompere i dati.
 
-Il repository è **pubblico**. Password, token e webhook vanno inseriti solo nelle
-*Environment variables* di Portainer. Il `.gitignore` esclude ogni file `*.env`, ma
-`stack.env.example` deve contenere esclusivamente valori di esempio.
+L'eccezione è [free-games-claimer](free-games-claimer/): il suo Watchtower
+controlla solo i container con scope `free-games-claimer`.
 
-## Errori comuni su Portainer
+Con *GitOps updates* → *Polling*, Portainer ridistribuisce lo stack quando il
+compose cambia su `main`. *Force redeployment* spento, altrimenti i container
+ripartono a ogni controllo.
 
-| Errore | Causa | Soluzione |
+## Aggiungere una stanza
+
+1. Nuova cartella, con `docker-compose.yml`, `stack.env.example` e `README.md`.
+2. Nel compose: `pull_policy: always`, `restart: unless-stopped`, variabili
+   obbligatorie scritte `${NOME:?err}`, dati in `${FOLDER_FOR_CONFIGS}/<nome>`.
+3. Se serve l'aggiornamento automatico, un Watchtower con scope uguale al nome
+   dello stack, come in [free-games-claimer](free-games-claimer/docker-compose.yml).
+4. Una riga nella tabella qui sopra.
+5. Prima del commit:
+
+   ```bash
+   docker compose --env-file <nome>/stack.env.example -f <nome>/docker-compose.yml config
+   ```
+
+## Quando Portainer si lamenta
+
+| Errore | Cosa è successo | Cosa fare |
 | --- | --- | --- |
-| `additional properties '<nome>' not allowed` | Il servizio non è sotto la chiave `services:` | Usa il `docker-compose.yml` del repository così com'è |
-| `open /data/compose/<n>/...docker-compose.yml: no such file or directory` | *Compose path* sbagliato | Percorso relativo alla root del repository, es. `free-games-claimer/docker-compose.yml` |
-| `required variable <NOME> is missing a value` | Variabile mancante nelle *Environment variables* | Aggiungila (l'elenco completo è in `stack.env.example`) |
-| `container name "/<nome>" is already in use` | Esiste ancora un container creato a mano o da un tentativo precedente | Eliminalo da *Containers* (i dati nella cartella di configurazione restano) e rifai il deploy |
-| `Pool overlaps with other one on this address space` | Due reti Docker con la stessa subnet | `media` è `172.28.10.0/24` e `utils` è `172.20.0.0/16`. Non riusare una delle due per un altro stack |
+| `additional properties '<nome>' not allowed` | Un servizio è finito fuori da `services:` | Usa il compose del repository |
+| `open /data/compose/<n>/... no such file` | *Compose path* sbagliato | Percorso relativo alla root, per esempio `media/docker-compose.yml` |
+| `required variable <NOME> is missing a value` | Manca una variabile | L'elenco è in `stack.env.example` |
+| `container name "/<nome>" is already in use` | Il container del vecchio stack è ancora lì | Eliminalo da *Containers*. Le cartelle dati restano |
+| `Pool overlaps with other one` | Due reti sulla stessa subnet | `media` è `172.28.10.0/24`, `utils` è `172.20.0.0/16` |

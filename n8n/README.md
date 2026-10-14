@@ -1,33 +1,37 @@
-# Stack Portainer: n8n
+# n8n
 
-n8n con Postgres 15. Compose path: `n8n/docker-compose.yml`. Il nome stack su
-Portainer resta `n8n`: il compose fissa `name: n8n`, così i volumi già creati
-(`n8n_n8n-postgres` e `n8n_n8n-data`) restano quelli giusti.
+Le automazioni. I workflow stanno su Postgres 15, n8n li esegue e, se un nodo
+deve parlare con Docker, ha il socket dell'host a disposizione. Chi entra in
+n8n può quindi anche gestire i container: tienilo in LAN, dietro il basic auth.
 
-Redis c'era nel compose ma n8n non lo usava (niente coda). Non è stato
-riportato. Il volume `n8n_n8n-redis` si può cancellare da *Volumes* dopo il
-passaggio, è vuoto di workflow.
+Compose path: `n8n/docker-compose.yml`. Il nome su Portainer resta `n8n`.
+Il compose fissa `name: n8n`, così i volumi già pieni restano agganciati:
+`n8n_n8n-postgres` e `n8n_n8n-data`.
 
-## Chiave di cifratura
+## La chiave, prima di tutto
 
-`N8N_ENCRYPTION_KEY` va copiata dal compose attuale su Portainer, non generata
-di nuovo. Con una chiave diversa n8n non decifra più le credenziali dei nodi.
-Password del database e basic auth vanno copiate allo stesso modo se Postgres
-è già stato inizializzato: `POSTGRES_PASSWORD` vale solo alla prima creazione
-del volume.
+`N8N_ENCRYPTION_KEY` va copiata dal compose che gira adesso. Con una chiave
+nuova n8n non legge più le credenziali salvate nei nodi.
 
-Il basic auth e `N8N_SECURE_COOKIE=false` restano come oggi, per l'accesso in
-HTTP sulla LAN. Il socket Docker è ancora montato: i workflow che lanciano
-container ne hanno bisogno, e chi controlla n8n controlla anche il Docker
-dell'host.
+Stesso discorso per `N8N_DB_PASSWORD` e per la password del basic auth, se il
+volume di Postgres esiste già: `POSTGRES_PASSWORD` viene letta solo alla prima
+creazione del database.
 
-Gli script esterni restano in `${FOLDER_FOR_SCRIPTS}` montato su `/script`.
+## Cosa parte
 
-## Deploy
+| Servizio | Dettaglio |
+| --- | --- |
+| Postgres 15 | Deve rispondere a `pg_isready` prima che n8n si avvii |
+| n8n | Porta `WEBUI_PORT_N8N` (`5678`). Fuso `TIMEZONE`, cookie sicuri disattivati con `N8N_SECURE_COOKIE=false` perché l'accesso è in HTTP |
+| Script | `${FOLDER_FOR_SCRIPTS}` montato su `/script`, oggi `/DATA/AppData/n8n` |
 
-1. Copia chiave, password database e basic auth dallo stack attuale.
-2. Rimuovi lo stack `n8n` senza cancellare i volumi `n8n_n8n-postgres` e
-   `n8n_n8n-data`.
-3. Deploy da git con lo stesso nome stack.
+Redis c'era nel compose vecchio e n8n non lo usava. Il volume `n8n_n8n-redis`
+si può cancellare da *Volumes* dopo il passaggio: i workflow sono nell'altro volume.
 
-n8n parte solo dopo che Postgres risponde a `pg_isready`. Non c'è Watchtower.
+## Passaggio
+
+1. Copia chiave, password del database e basic auth.
+2. Rimuovi lo stack `n8n` lasciando `n8n_n8n-postgres` e `n8n_n8n-data`.
+3. Deploy da git, stesso nome.
+
+Si aggiorna con *Update the stack*, quando lo decidi tu.
