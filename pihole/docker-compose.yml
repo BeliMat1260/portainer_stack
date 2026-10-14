@@ -14,7 +14,7 @@ services:
       FTLCONF_webserver_api_password: ${PIHOLE_PASSWORD:?err}
       FTLCONF_webserver_port: ${WEBUI_PORT_PIHOLE:?err}
       FTLCONF_dns_listeningMode: all
-      FTLCONF_DNS_UPSTREAM: ${PIHOLE_UPSTREAMS:?err}
+      FTLCONF_dns_upstreams: ${PIHOLE_UPSTREAMS:?err}
     volumes:
       - ${FOLDER_FOR_CONFIGS:?err}/pihole:/etc/pihole
     cap_add:
