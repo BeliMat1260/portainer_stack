@@ -41,6 +41,8 @@ La regola per il modem TIM (`192.168.1.1`): può usare Pi-hole (`192.168.1.90`) 
 - Se invece è il modem a girare le query a Pi-hole, nel registro compare solo `192.168.1.1` e il limite vale per tutta la casa.
 - La porta `53` non va aperta verso internet.
 
+Se Pi-hole è l'unico DNS della rete, ogni volta che lo stack si ferma (aggiornamento, riavvio del server) la casa resta senza DNS. Anche il server ne risente se risolve i nomi passando dal modem: Docker non riesce a scaricare l'immagine di Pi-hole proprio mentre Pi-hole è spento. Sul server conviene impostare un DNS fisso esterno, per esempio `1.1.1.1`, al posto di quello del modem.
+
 Senza inoltro condizionale il registro delle query mostra gli IP al posto dei nomi. I nomi si aggiungono a mano in *Settings* → *Local DNS Records*.
 
 Per usare il DHCP di Pi-hole bisogna prima spegnere quello del modem, poi togliere `FTLCONF_dhcp_active` dal compose.

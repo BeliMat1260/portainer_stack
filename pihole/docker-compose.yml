@@ -13,9 +13,8 @@ services:
       TZ: ${TIMEZONE:?err}
       FTLCONF_webserver_api_password: ${PIHOLE_PASSWORD:?err}
       FTLCONF_webserver_port: ${WEBUI_PORT_PIHOLE:?err}
-      # Valori forzati: prevalgono sul pihole.toml copiato da una vecchia
-      # installazione. Il modem non deve mai essere un DNS a monte di
-      # Pi-hole, altrimenti modem e Pi-hole si rimandano le query in loop.
+      # Prevalgono sul pihole.toml esistente. Il modem non deve mai essere
+      # un DNS a monte di Pi-hole: si rimanderebbero le query in loop.
       FTLCONF_dns_upstreams: 1.1.1.1;9.9.9.9
       FTLCONF_dns_revServers: ""
       FTLCONF_dns_listeningMode: local
