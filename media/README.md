@@ -24,6 +24,8 @@ Questi servizi condividono la rete di Gluetun, che pubblica le loro porte.
 
 Gluetun pubblica anche il control server `9075`, il proxy HTTP `8888` e Shadowsocks `8388`. Proxy e Shadowsocks sono raggiungibili dalla LAN (`LOCAL_SUBNET`).
 
+Il control server risponde solo a chi manda `GLUETUN_API_KEY` nell'header `X-API-Key`, per esempio il widget di Homepage con `key:`. Una chiave si genera con `docker run --rm qmcgaw/gluetun genkey`.
+
 ## Sulla rete dello stack
 
 | Servizio | Porta sull'host |
