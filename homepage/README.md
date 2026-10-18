@@ -18,7 +18,7 @@ Homepage legge i file da `/DATA/AppData/homepage`, non dal repository. Dopo ogni
 
 ```bash
 cd /DATA/AppData/homepage
-for f in services settings widgets; do
+for f in services settings widgets bookmarks; do
   curl -fsSLO "https://raw.githubusercontent.com/BeliMat1260/portainer_stack/main/homepage/config/$f.yaml"
 done
 ```
