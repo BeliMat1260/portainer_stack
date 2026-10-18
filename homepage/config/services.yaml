@@ -1,0 +1,181 @@
+---
+- Media:
+    - Jellyfin:
+        icon: jellyfin.png
+        href: http://192.168.1.90:8096
+        description: Film e serie
+        container: jellyfin
+        widget:
+          type: jellyfin
+          url: http://192.168.1.90:8096
+          key: '{{HOMEPAGE_VAR_JELLYFIN_KEY}}'
+          version: 2
+          enableBlocks: true
+          enableNowPlaying: true
+          enableUser: true
+          showEpisodeNumber: true
+          fields: ["movies", "series", "episodes"]
+    - Seerr:
+        icon: seerr.png
+        href: http://192.168.1.90:5055
+        description: Richieste
+        container: seerr
+        widget:
+          type: seerr
+          url: http://192.168.1.90:5055
+          key: '{{HOMEPAGE_VAR_SEERR_KEY}}'
+          fields: ["pending", "processing", "available"]
+    - Tdarr:
+        icon: tdarr.png
+        href: http://192.168.1.90:8265
+        description: Transcodifica
+        container: tdarr
+        widget:
+          type: tdarr
+          url: http://192.168.1.90:8265
+
+- Download:
+    - Radarr:
+        icon: radarr.png
+        href: http://192.168.1.90:7878
+        description: Film
+        container: radarr
+        widget:
+          type: radarr
+          url: http://192.168.1.90:7878
+          key: '{{HOMEPAGE_VAR_RADARR_KEY}}'
+    - Sonarr:
+        icon: sonarr.png
+        href: http://192.168.1.90:8989
+        description: Serie TV
+        container: sonarr
+        widget:
+          type: sonarr
+          url: http://192.168.1.90:8989
+          key: '{{HOMEPAGE_VAR_SONARR_KEY}}'
+    - Prowlarr:
+        icon: prowlarr.png
+        href: http://192.168.1.90:9696
+        description: Indexer, dietro la VPN
+        container: prowlarr
+        widget:
+          type: prowlarr
+          url: http://192.168.1.90:9696
+          key: '{{HOMEPAGE_VAR_PROWLARR_KEY}}'
+    - qBittorrent:
+        icon: qbittorrent.png
+        href: http://192.168.1.90:8200
+        description: Torrent, dietro la VPN
+        container: qbittorrent
+        widget:
+          type: qbittorrent
+          url: http://192.168.1.90:8200
+          username: '{{HOMEPAGE_VAR_QBITTORRENT_USER}}'
+          password: '{{HOMEPAGE_VAR_QBITTORRENT_PASSWORD}}'
+
+- Rete:
+    - Gluetun:
+        icon: gluetun.png
+        description: VPN di qBittorrent, Prowlarr e Trawl
+        container: gluetun
+        widget:
+          type: gluetun
+          url: http://192.168.1.90:9075
+          key: '{{HOMEPAGE_VAR_GLUETUN_KEY}}'
+          version: 2
+    - Trawl:
+        icon: flaresolverr.png
+        href: http://192.168.1.90:8191
+        description: Bypass di Cloudflare per Prowlarr
+        container: trawl
+        siteMonitor: http://192.168.1.90:8191
+    - Pi-hole:
+        icon: pi-hole.png
+        href: http://192.168.1.90:8081/admin
+        description: DNS e blocco pubblicità
+        container: pihole
+        widget:
+          type: pihole
+          url: http://192.168.1.90:8081
+          version: 6
+          key: '{{HOMEPAGE_VAR_PIHOLE_KEY}}'
+    - Cloudflared:
+        icon: cloudflare-zero-trust.png
+        href: https://one.dash.cloudflare.com/
+        description: Tunnel verso Internet
+        container: cloudflared
+
+- Cloud:
+    - Nextcloud:
+        icon: nextcloud.png
+        href: '{{HOMEPAGE_VAR_NEXTCLOUD_URL}}'
+        description: Cloud personale
+        container: nextcloud
+        widget:
+          type: nextcloud
+          url: '{{HOMEPAGE_VAR_NEXTCLOUD_URL}}'
+          key: '{{HOMEPAGE_VAR_NEXTCLOUD_TOKEN}}'
+          fields: ["activeusers", "numfiles", "numshares", "freespace"]
+    - Syncthing:
+        icon: syncthing.png
+        href: http://192.168.1.90:8384
+        description: Sincronizzazione file
+        container: syncthing
+        widget:
+          type: syncthing
+          url: http://192.168.1.90:8384
+          key: '{{HOMEPAGE_VAR_SYNCTHING_KEY}}'
+    - File Browser:
+        icon: filebrowser.png
+        href: http://192.168.1.90:8080
+        description: File del disco
+        container: filebrowser
+        siteMonitor: http://192.168.1.90:8080
+
+- Sistema:
+    - Portainer:
+        icon: portainer.png
+        href: https://192.168.1.90:9443
+        description: Stack e container
+        container: portainer
+        widget:
+          type: portainer
+          url: https://192.168.1.90:9443
+          env: {{HOMEPAGE_VAR_PORTAINER_ENV}}
+          key: '{{HOMEPAGE_VAR_PORTAINER_KEY}}'
+    - Gitea:
+        icon: gitea.png
+        href: http://192.168.1.90:1111
+        description: Repository Git
+        container: gitea
+        widget:
+          type: gitea
+          url: http://192.168.1.90:1111
+          key: '{{HOMEPAGE_VAR_GITEA_KEY}}'
+    - n8n:
+        icon: n8n.png
+        href: http://192.168.1.90:5678
+        description: Automazioni
+        container: n8n
+        siteMonitor: http://192.168.1.90:5678
+
+- Gaming:
+    - Crafty:
+        icon: crafty-controller.png
+        href: https://192.168.1.90:8443
+        description: Server Minecraft
+        container: crafty-controller
+        widget:
+          type: minecraft
+          url: udp://192.168.1.90:25565
+    - Pterodactyl:
+        icon: pterodactyl.png
+        href: http://192.168.1.90:5080
+        description: Pannello dei server di gioco
+        container: pterodactyl-panel
+        siteMonitor: http://192.168.1.90:5080
+    - Free Games:
+        icon: sh-free-games-claimer.png
+        href: http://192.168.1.90:6080
+        description: Giochi gratis da Epic, Prime, GOG
+        container: free-games-claimer

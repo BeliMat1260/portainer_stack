@@ -1,0 +1,44 @@
+---
+title: Homelab
+description: Servizi di casa
+language: it
+theme: dark
+color: slate
+target: _blank
+
+headerStyle: boxed
+cardStyle: hairline
+blockStyle: refined
+statusStyle: dot
+useEqualHeights: true
+hideVersion: true
+
+quicklaunch:
+  searchDescriptions: true
+  provider: duckduckgo
+
+layout:
+  Media:
+    icon: mdi-movie-open-play
+    style: row
+    columns: 3
+  Download:
+    icon: mdi-download-network
+    style: row
+    columns: 4
+  Rete:
+    icon: mdi-shield-lock-outline
+    style: row
+    columns: 4
+  Cloud:
+    icon: mdi-cloud-sync-outline
+    style: row
+    columns: 3
+  Sistema:
+    icon: mdi-server-network
+    style: row
+    columns: 3
+  Gaming:
+    icon: mdi-gamepad-variant-outline
+    style: row
+    columns: 3
