@@ -1,0 +1,24 @@
+---
+- resources:
+    label: Server
+    cpu: true
+    memory: true
+    uptime: true
+
+- resources:
+    label: Dischi
+    disk:
+      - /
+      - /hdd
+
+- search:
+    provider: duckduckgo
+    target: _blank
+
+- datetime:
+    text_size: md
+    locale: it
+    format:
+      dateStyle: full
+      timeStyle: short
+      hourCycle: h23
