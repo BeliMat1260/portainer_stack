@@ -10,15 +10,15 @@ services:
       - ${FOLDER_FOR_CONFIGS:?err}/free-games-claimer:/fgc/data
     environment:
       - TZ=${TIMEZONE:?err}
-      - NOTIFY=${NOTIFY:?err}
-      - PG_REDEEM=1
-      - GP_CLAIM_DLC=true
+      - DISCORD_WEBHOOK=${DISCORD_WEBHOOK:?err}
       - NOTIFY_MISSING_BASE=false
-      - STORES=epic,fab,prime,gog,ubisoft,aliexpress
+      - STORES=steam,epic,fab,prime,gog,ubisoft,aliexpress
       - SHOW=1
       - RUN_ON_STARTUP=true
       - VNC_LOGIN_TIMEOUT=600
       - VNC_URL=http://${SERVER_IP:?err}:${WEBUI_PORT_FREE_GAMES_CLAIMER:?err}
+      - STEAM_USERNAME=${STEAM_USERNAME:?err}
+      - STEAM_PASSWORD=${STEAM_PASSWORD:?err}
       - EG_EMAIL=${EG_EMAIL:?err}
       - EG_PASSWORD=${EG_PASSWORD:?err}
       - PG_EMAIL=${PG_EMAIL:?err}
