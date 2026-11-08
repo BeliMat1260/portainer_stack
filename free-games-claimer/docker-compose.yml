@@ -12,7 +12,7 @@ services:
       - TZ=${TIMEZONE:?err}
       - DISCORD_WEBHOOK=${DISCORD_WEBHOOK:?err}
       - NOTIFY_MISSING_BASE=false
-      - STORES=steam,epic,fab,prime,gog,ubisoft,aliexpress
+      - STORES=steam,epic,fab,prime,gog,microsoft,legacy,ubisoft,aliexpress
       - SHOW=1
       - RUN_ON_STARTUP=true
       - VNC_LOGIN_TIMEOUT=600
@@ -25,6 +25,10 @@ services:
       - PG_PASSWORD=${PG_PASSWORD:?err}
       - GOG_EMAIL=${GOG_EMAIL:?err}
       - GOG_PASSWORD=${GOG_PASSWORD:?err}
+      - MS_EMAIL=${MS_EMAIL:?err}
+      - MS_PASSWORD=${MS_PASSWORD:?err}
+      - LG_EMAIL=${LG_EMAIL:?err}
+      - LG_PASSWORD=${LG_PASSWORD:?err}
       - UBI_EMAIL=${UBI_EMAIL:?err}
       - UBI_PASSWORD=${UBI_PASSWORD:?err}
       - AE_EMAIL=${AE_EMAIL:?err}
@@ -36,8 +40,6 @@ services:
     networks:
       - utils-network
 
-  # Only touches containers carrying the matching enable + scope labels,
-  # so other stacks on the host are never updated by this instance.
   watchtower:
     image: nickfedor/watchtower:latest
     container_name: free-games-claimer-watchtower
